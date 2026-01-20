@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>서윤이 진우네 게시판 글 보기</title>
+    <style>
+        body { 
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; 
+            padding: 20px; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background-image: url('/images/시나모롤2.png'); /* 배경 이미지 */
+            background-size: cover;       
+            background-position: center;  
+            background-attachment: fixed; 
+        }
+
+        .container { 
+            border: 1px solid #ddd; 
+            padding: 30px; 
+            border-radius: 12px; 
+            background-color: rgba(255, 255, 255, 0.9); /* 가독성을 위해 흰색 배경 투명도 조절 */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+        }
+
+        h1 { margin-top: 0; color: #333; }
+
+        .meta { 
+            color: #666; 
+            font-size: 0.9rem; 
+            margin-bottom: 20px; 
+            border-bottom: 2px solid #eee; 
+            padding-bottom: 10px; 
+        }
+
+        .content { 
+            min-height: 200px; 
+            white-space: pre-wrap; 
+            line-height: 1.6; 
+            margin-bottom: 30px; 
+            font-size: 1.05rem;
+        }
+        
+        /* 버튼 스타일들 */
+        .btn-group { margin-top: 20px; text-align: right; }
+        button { 
+            padding: 8px 16px; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 6px; 
+            color: white; 
+            font-weight: bold; 
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+        button:hover { opacity: 0.8; }
+
+        .btn-list { background: #6c757d; }
+        .btn-edit { background: #ffc107; color: black; }
+        .btn-del { background: #dc3545; }
+
+        /* ▼▼▼ 댓글 섹션 스타일 ▼▼▼ */
+        .comment-section {
+            margin-top: 50px;
+            border-top: 2px dashed #ccc; 
+            padding-top: 20px;
+        }
+
+        /* 댓글 헤더 (제목 + 버튼) */
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        /* 댓글 쓰기/닫기 토글 버튼 */
+        .btn-toggle {
+            background-color: #87CEEB; /* 시나모롤 하늘색 */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 댓글 입력 폼 (숨김 처리용) */
+        .comment-form {
+            background: #f1f8ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border: 1px solid #cce5ff;
+            /* display: none; -> 자바스크립트로 제어할 거라 여기선 뺌 */
+        }
+        
+        .comment-inputs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .comment-inputs input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+        .comment-form textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: none;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .btn-save {
+            width: 100%;
+            margin-top: 10px;
+            background-color: #4facfe;
+            padding: 10px;
+        }
+        
+        /* 댓글 리스트 아이템 */
+        .comment-item {
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 15px 5px;
+        }
+        .comment-item:last-child { border-bottom: none; }
+        
+        .comment-author { font-weight: bold; color: #444; margin-right: 8px;}
+        .comment-date { font-size: 0.8rem; color: #aaa; }
+        .comment-body { margin-top: 8px; white-space: pre-wrap; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="title">로딩 중...</h1>
+        <div class="meta">
+            No.<span id="id"></span> | 작성자: <span id="author"></span> | <span id="date"></span>
+        </div>
+        <div id="content" class="content"></div>
+
+        <div class="btn-group">
+            <button class="btn-list" onclick="location.href='list.html'">목록으로</button>
+            <button class="btn-edit" onclick="goToUpdate()">수정</button>
+            <button class="btn-del" onclick="deletePost()">삭제</button>
+        </div>
+
+        <div class="comment-section">
+            <div class="comment-header">
+                <h3 style="margin: 0;">💬 댓글 <span id="comment-count">0</span>개</h3>
+                <button id="toggle-btn" class="btn-toggle" onclick="toggleCommentForm()">
+                    ✏️ 댓글 쓰기
+                </button>
+            </div>
+            
+            <div id="comment-form-box" class="comment-form" style="display: none;">
+                <div class="comment-inputs">
+                    <input type="text" id="c-author" placeholder="작성자" style="width: 30%;">
+                    <input type="password" id="c-password" placeholder="비밀번호" style="width: 70%;">
+                </div>
+                <textarea id="c-content" placeholder="고운 말을 써주세요!"></textarea>
+                <button class="btn-save" onclick="saveComment()">등록 완료</button>
+            </div>
+
+            <div id="comment-list">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const boardId = params.get('id');
+
+        // 페이지 로드 시 실행
+        window.onload = async () => {
+            if (!boardId) {
+                alert("잘못된 접근입니다.");
+                location.href = "list.html";
+                return;
+            }
+            await loadPost();     // 게시글 불러오기
+            await loadComments(); // 댓글 불러오기
+        };
+
+        // 1. 게시글 불러오기
+        async function loadPost() {
+            try {
+                const response = await fetch(`/api/board/${boardId}`);
+                if (response.ok) {
+                    const board = await response.json();
+                    document.getElementById('id').textContent = board.id;
+                    document.getElementById('title').textContent = board.title;
+                    document.getElementById('author').textContent = board.author;
+                    document.getElementById('date').textContent = board.createdAt.replace('T', ' ').substring(0, 16);
+                    document.getElementById('content').textContent = board.content;
+                } else {
+                    throw new Error("글을 찾을 수 없습니다.");
+                }
+            } catch (e) {
+                alert(e.message);
+                location.href = "list.html";
+            }
+        }
+
+        // 2. 댓글 목록 불러오기 (수정됨: /list 추가)
+        async function loadComments() {
+            try {
+                // 컨트롤러 주소: /api/comment/list?boardId=...
+                const response = await fetch(`/api/comment/list?boardId=${boardId}`);
+                const comments = await response.json();
+
+                const listDiv = document.getElementById('comment-list');
+                document.getElementById('comment-count').textContent = comments.length;
+                listDiv.innerHTML = ''; 
+
+                comments.forEach(c => {
+                    const html = `
+                        <div class="comment-item">
+                            <div>
+                                <span class="comment-author">${c.author}</span>
+                                <span class="comment-date">${c.createdAt ? c.createdAt.replace('T', ' ').substring(0, 16) : ''}</span>
+                            </div>
+                            <div class="comment-body">${c.content}</div>
+                        </div>
+                    `;
+                    listDiv.innerHTML += html;
+                });
+            } catch (e) {
+                console.error("댓글 로딩 실패", e);
+            }
+        }
+
+        // 3. 댓글 저장하기 (저장 후 창 닫기 기능 추가)
+        async function saveComment() {
+            const author = document.getElementById('c-author').value;
+            const password = document.getElementById('c-password').value;
+            const content = document.getElementById('c-content').value;
+
+            if (!author || !password || !content) {
+                alert("내용을 모두 입력해주세요!");
+                return;
+            }
+
+            const data = {
+                boardId: boardId,
+                author: author,
+                password: password,
+                content: content
+            };
+
+            try {
+                const response = await fetch('/api/comment/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert("댓글이 등록되었습니다!");
+                    
+                    // 입력창 내용 비우기
+                    document.getElementById('c-content').value = '';
+                    document.getElementById('c-author').value = '';
+                    document.getElementById('c-password').value = '';
+                    
+                    // ★ 핵심: 다 썼으니 입력창 닫기!
+                    toggleCommentForm();
+
+                    // 목록 다시 로딩
+                    loadComments(); 
+                } else {
+                    alert("등록 실패!");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("에러 발생");
+            }
+        }
+
+        // 4. 댓글 창 토글 함수 (열었다 닫았다)
+        function toggleCommentForm() {
+            const formBox = document.getElementById('comment-form-box');
+            const btn = document.getElementById('toggle-btn');
+
+            if (formBox.style.display === 'none') {
+                formBox.style.display = 'block'; // 보이기
+                btn.innerText = "닫기";
+                btn.style.background = "#6c757d"; // 회색
+            } else {
+                formBox.style.display = 'none'; // 숨기기
+                btn.innerText = "✏️ 댓글 쓰기";
+                btn.style.background = "#87CEEB"; // 하늘색
+            }
+        }
+
+        // 게시글 수정/삭제 페이지 이동
+        function goToUpdate() {
+            location.href = `update.html?id=${boardId}`;
+        }
+
+        async function deletePost() {
+            const password = prompt("삭제 비밀번호를 입력하세요.");
+            if (!password) return;
+
+            try {
+                const response = await fetch(`/api/board/${boardId}?password=${password}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    alert("삭제되었습니다.");
+                    location.href = "list.html"; 
+                } else {
+                    alert("비밀번호가 틀렸습니다.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("서버 오류");
+            }
+        }
+    </script>
+</body>
+</html>

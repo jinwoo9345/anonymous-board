@@ -1,0 +1,26 @@
+### 1. 글 쓰기 테스트
+POST http://localhost:8080/api/board/write
+Content-Type: application/json
+
+{
+  "title": "첫 번째 글입니다",
+  "content": "안녕하세요! 익명 게시판 테스트 중입니다.",
+  "author": "홍길동",
+  "password": "1234"
+}
+
+### 2. 전체 글 조회 테스트
+GET http://localhost:8080/api/board/list
+
+
+### 3. 글 삭제 테스트
+DELETE http://localhost:8080/api/board/1?password=1234
+
+### 게시글 수정 테스트
+PUT http://localhost:8080/api/board/1
+Content-Type: application/json
+
+{
+    "title": "수정된 제목입니다",
+    "content": "내용도 이렇게 수정되었습니다."
+}

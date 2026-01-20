@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>목록 - 서윤이와 진우네 게시판</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+
+        background-image: url('/images/시나모롤.png');
+        background-size: cover;       
+        background-position: center;  
+        background-attachment: fixed; 
+      }
+      .card {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        background-color: rgba(255, 255, 255, 0.6);
+      }
+      .info {
+        font-size: 0.8rem;
+        color: #666;
+        margin-bottom: 5px;
+      }
+      .btn-write {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        text-align: center;
+        background: #28a745;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>📋 서윤이와 진우네 게시판</h1>
+    <a href="write.html" class="btn-write">글쓰기 하러가기</a>
+
+    <div id="board-list">
+      <p>바보 서윤이가 글을 로딩 중...</p>
+    </div>
+
+    <script>
+      window.onload = async () => {
+        const listDiv = document.getElementById("board-list");
+
+        // 1. 서버에서 글 목록 가져오기 (GET)
+        const response = await fetch("/api/board/list");
+        const boards = await response.json();
+
+        // 2. 화면에 그리기
+        listDiv.innerHTML = ""; // 로딩 문구 지우기
+        boards.forEach((board) => {
+          const card = `
+            <div class="card" onclick="location.href='detail.html?id=${board.id}'" style="cursor:pointer;">
+        <div class="info">
+            No.${board.id} | 작성자: ${board.author} | ${board.createdAt}
+        </div>
+        <h3>${board.title}</h3>
+        <p>${board.content}</p>
+    </div>
+`;
+          listDiv.innerHTML += card; // 카드 추가
+        });
+      };
+    </script>
+  </body>
+</html>
