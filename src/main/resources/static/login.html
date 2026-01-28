@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>로그인 - 서윤이와 진우 게시판</title>
+    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 초기화 */
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Gamja Flower', sans-serif; 
+            margin: 0; 
+            padding: 0;
+            
+            /* ▼ 배경화면 최적화 설정 */
+            background-image: url('/images/시나모롤1.png'); 
+            
+            /* 이미지가 화면을 꽉 채우되, 비율 유지 */
+            background-size: cover;       
+            /* 이미지의 정중앙을 보여줌 */
+            background-position: center center;  
+            /* 스크롤해도 배경 고정 */
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+
+            /* 화면 정중앙 정렬 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* 화면 높이 100% 사용 */
+        }
+
+        .container { 
+            /* ▼ PC에서는 400px, 모바일에서는 화면의 90%만 차지하게 설정 */
+            width: 90%;
+            max-width: 400px;
+            
+            background-color: rgba(255, 255, 255, 0.85); 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); 
+            text-align: center;
+            
+            /* 배경이 좀 더 잘 보이게 블러 효과 추가 */
+            backdrop-filter: blur(3px);
+        }
+
+        h1 { 
+            color: #4a6ee0; 
+            margin-bottom: 20px; 
+            font-size: 2.2rem; 
+            /* 모바일에서 줄바꿈 방지 */
+            word-break: keep-all; 
+        }
+
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 12px; 
+            border: 2px solid #a8c0ff; 
+            border-radius: 12px; 
+            font-family: 'Gamja Flower', sans-serif;
+            font-size: 1.1rem;
+            outline: none;
+        }
+        input:focus { border-color: #4a6ee0; background: #f9fbff; }
+
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            margin-top: 8px;
+            border: none; 
+            border-radius: 12px; 
+            font-family: 'Gamja Flower', sans-serif;
+            font-size: 1.1rem;
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.2s;
+        }
+
+        .btn-login { background: #4a6ee0; color: white; box-shadow: 0 4px 0 #3b5bc4; }
+        .btn-login:active { box-shadow: none; transform: translateY(4px); } /* 눌리는 느낌 */
+
+        .btn-signup { background: #ff9aa2; color: white; margin-top: 15px; }
+        .btn-home { background: #fff; border: 2px solid #ddd; color: #555; margin-top: 20px; }
+
+        /* ▼ 모바일 전용 스타일 (화면이 작을 때) */
+        @media (max-width: 480px) {
+            h1 { font-size: 1.8rem; } /* 제목 크기 조금 줄임 */
+            .container { padding: 25px 20px; } /* 패딩 줄여서 공간 확보 */
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <h1>☁️ 로그인 ☁️</h1>
+        
+        <input type="text" id="userId" placeholder="아이디 입력!"> 
+        <input type="password" id="password" placeholder="비밀번호 입력!"> 
+        
+        <button class="btn-login" onclick="login()">로그인 🚀</button>
+        <button class="btn-signup" onclick="location.href='signup.html'">아직 회원이 아니야? (가입)</button>
+        <button class="btn-home" onclick="location.href='index.html'">🏠 홈으로 가기</button>
+    </div>
+
+    <script>
+        function login() {
+            const userId = document.getElementById("userId").value;
+            const password = document.getElementById("password").value;
+
+            if(!userId || !password) {
+                alert("아이디랑 비밀번호를 입력해줘! 🥺");
+                return;
+            }
+
+            fetch("/api/user/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: userId, password: password })
+            })
+            .then(res => res.text())
+            .then(msg => {
+                if (msg.includes("성공")) {
+                    alert("어서와! ❤️"); 
+                    location.href = "index.html";   
+                } else {
+                    alert("아이디나 비밀번호가 틀렸어! 다시 확인해봐 🤔");
+                }
+            })
+            .catch(err => {
+                alert("서버 연결 실패 ㅠㅠ");
+            });
+        }
+    </script>
+</body>
+</html>

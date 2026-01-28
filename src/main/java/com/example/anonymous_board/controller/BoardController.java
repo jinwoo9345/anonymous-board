@@ -1,7 +1,13 @@
 package com.example.anonymous_board.controller;
 
+import com.example.anonymous_board.dto.BoardWriteDto;
 import com.example.anonymous_board.dto.BoardDTO;
 import com.example.anonymous_board.service.BoardService;
+import com.example.anonymous_board.entity.User;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
 import com.example.anonymous_board.dto.BoardUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +22,25 @@ public class BoardController {
     // 1. 글 쓰기 (POST)
     // 주소: POST /api/board/write
     @PostMapping("/write")
-    public BoardDTO write(@RequestBody BoardDTO boardDTO) {
+    public String write(@RequestBody BoardWriteDto dto, HttpServletRequest request) {
         // @RequestBody: "주문서(JSON)를 자바 객체(DTO)로 바꿔서 받아줘"
-        return boardService.writeBoard(boardDTO);
+
+        //1단계 .: 검문소 :  세션이 있는지, 로그인은 했는지 확인
+        HttpSession session  = request.getSession(false);
+        if(session == null || session.getAttribute("loginUser")== null){
+            return "로그인이 필요한 기능입니다!";
+        }
+
+        //2단계- 작성자 신원확인: 세션에서 유저 정보 꺼내기
+        // (object로 저장되어있음)-> user로 강제 형변환 필요
+        User loginUser = (User) session.getAttribute("loginUser");
+
+
+        //3단계-서비스에게 전달
+        //이 dto로 글을 써줘 . 글쓴이는 loginUser야
+        boardService.write(dto,loginUser);
+
+        return "게시글 작성 완료!!";
     }
 
     // 2. 전체 글 조회 (GET)
@@ -34,20 +56,51 @@ public class BoardController {
     }
 
     //3. 글 수정 (PUT)
-    @PutMapping("/{id}")
-    public Long update(
-        @PathVariable("id") Long id,
-        @RequestBody BoardUpdateRequest requestDto
+    @PutMapping("/update/{id}")
+    public String update(
+        @PathVariable Long id, 
+        @RequestBody BoardUpdateRequest dto, 
+        HttpServletRequest request
+       
     ){
-        return boardService.update(id, requestDto);
+        // 1. 우선 세션체크 먼저(로그인 했는지 확인)
+        HttpSession session = request.getSession(false);
+        if(session == null || session.getAttribute("loginUser") == null){
+            return "로그인이 필요한 기능입니다!";
+        }
+
+        User loginUser = (User) session.getAttribute("loginUser");
+        try {
+            //3. 서비스 호출(id, dto, 로그인 유저객체 전달!)
+            boardService.update(id,dto,loginUser);
+            return "글 수정 성공!";
+        } catch (IllegalArgumentException e) {
+            // "작성자만 수정가능" 과 유사한 에러메시지 반환
+            return e.getMessage();
+        }
     }
     //4. 글 삭제 (DELETE)
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public String delete(
         @PathVariable("id") Long id,
-        @RequestParam("password") String password
+        HttpServletRequest request
+        
     ){
-        boardService.deleteBoard(id, password);
-        return "삭제 성공";
+        //1. 세션체크 우선 
+        HttpSession session = request.getSession(false);
+        if(session == null || session.getAttribute("loginUser")== null){
+            return "로그인이 필요한 기능입니다.";
+        }
+
+        User loginUser = (User) session.getAttribute("loginUser");
+        try {
+            //3. 삭제 서비스 호출 (id, 유저 객체 전달)
+            boardService.deleteBoard(id, loginUser);
+
+            return "글 삭제 성공!";
+        } catch (Exception e) {
+            // TODO: handle exception
+            return e.getMessage();
+        }
     }
 }

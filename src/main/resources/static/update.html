@@ -2,145 +2,151 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>글 수정하기</title>
+    <title>글 수정하기 - 서윤이와 진우 게시판</title>
+    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap" rel="stylesheet">
     <style>
         body { 
-            font-family: sans-serif; 
+            font-family: 'Gamja Flower', sans-serif; 
             padding: 20px; 
-            margin: 0; /* 여백 초기화 */
-
-            /* ▼ 배경화면 설정 */
+            margin: 0; 
+            /* 배경화면 (4번 이미지 유지!) */
             background-image: url('/images/시나모롤4.png');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
         }
 
-        /* ▼ 내용을 감싸는 흰색 상자 스타일 */
         .container {
             max-width: 600px;
-            margin: 0 auto;
+            margin: 50px auto;
             padding: 30px;
-            background-color: rgba(255, 255, 255, 0.6); /* 반투명 흰색 */
-            border-radius: 15px;    /* 모서리 둥글게 */
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* 그림자 */
+            background-color: rgba(255, 255, 255, 0.9); /* 가독성 위해 투명도 조절 */
+            border-radius: 20px;    
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+            text-align: center;
         }
 
-        h2 { text-align: center; margin-bottom: 20px; color: #333; }
+        h2 { margin-bottom: 20px; color: #333; font-size: 2rem; }
 
-        /* 입력창 디자인 업그레이드 */
+        /* 입력창 디자인 */
         input, textarea { 
             width: 100%; 
             margin-bottom: 15px; 
             padding: 12px; 
             box-sizing: border-box; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; /* 둥글게 */
-            font-size: 1rem;
+            border: 2px solid #ffc107; /* 수정 모드는 노란색 포인트 */
+            border-radius: 10px; 
+            font-family: 'Gamja Flower', sans-serif;
+            font-size: 1.1rem;
+            outline: none;
         }
+        
+        textarea { resize: vertical; }
 
-        /* 읽기 전용 필드 스타일 */
-        .readonly { 
-            background-color: #eee; 
-            color: #666; 
-            cursor: not-allowed; 
-        }
-
-        /* 버튼 디자인 업그레이드 */
+        /* 버튼 디자인 */
         button { 
             width: 100%; 
             padding: 12px; 
-            background: #ffc107; /* 수정 버튼은 노란색 유지 */
-            color: black; 
+            color: #333; 
             border: none; 
-            border-radius: 8px; /* 둥글게 */
+            border-radius: 10px; 
             cursor: pointer; 
-            font-size: 1.1rem; 
+            font-size: 1.2rem; 
             font-weight: bold; 
+            transition: 0.3s;
+            font-family: 'Gamja Flower', sans-serif;
             margin-bottom: 10px;
-            transition: background 0.3s;
         }
-        button:hover { background: #e0a800; }
+        
+        .btn-update { background: #ffc107; } /* 노란색 */
+        .btn-update:hover { background: #e0a800; transform: scale(1.02); }
+        
+        .btn-cancel { background: #ddd; color: #555; }
+        .btn-cancel:hover { background: #ccc; }
 
-        .btn-cancel { 
-            background: #6c757d; 
-            color: white; 
-            margin-top: 5px; 
-        }
-        .btn-cancel:hover { background: #5a6268; }
+        .btn-home { background: #a8c0ff; color: white; margin-top: 20px;}
+        .btn-home:hover { background: #96b3ff; }
+
     </style>
 </head>
 <body>
     
     <div class="container">
-        <h2>🛠️ 글 수정할래?</h2>
+        <h2>✏️ 글 고쳐쓰기 (수정)</h2>
         
-        <input type="text" id="id" class="readonly" readonly placeholder="번호">
-        <input type="text" id="author" class="readonly" readonly placeholder="작성자">
+        <input type="text" id="title" placeholder="제목 불러오는 중...">
         
-        <input type="text" id="title" placeholder="제목">
-        <input type="password" id="password" placeholder="비밀번호 (필수)" required> 
-        <textarea id="content" rows="10" placeholder="내용을 입력하세요"></textarea>
+        <textarea id="content" rows="12" placeholder="내용 불러오는 중..."></textarea>
         
-        <button onclick="updatePost()">수정 완료</button>
-        <button onclick="history.back()" class="btn-cancel">취소</button>
+        <button class="btn-update" onclick="updatePost()">수정 완료! ✨</button>
+        <button class="btn-cancel" onclick="history.back()">취소하고 돌아가기</button>
+        <button class="btn-home" onclick="location.href='index.html'">🏠 홈으로 가기</button>
     </div>
 
     <script>
-        // 1. 주소창에서 ID 가져오기
+        // 주소창에서 id 가져오기
         const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
+        const boardId = params.get("id");
 
-        if (!id) {
-            alert("잘못된 접근이야!!!");
-            location.href = "list.html";
-        }
-
-        // 2. 기존 데이터 불러와서 채워넣기
-        window.onload = async () => {
-            try {
-                const response = await fetch(`/api/board/${id}`);
-                const board = await response.json();
-
-                document.getElementById('id').value = board.id;
-                document.getElementById('author').value = board.author;
-                document.getElementById('title').value = board.title;
-                document.getElementById('content').value = board.content;
-            } catch (e) {
-                console.error(e);
-                alert("글 정보를 불러오는데 실패했지롱~~메롱!");
-            }
-        };
-
-        // 3. 수정 요청 보내기 (비밀번호 포함)
-        async function updatePost() {
-            const data = {
-                title: document.getElementById('title').value,
-                content: document.getElementById('content').value,
-                password: document.getElementById('password').value // 비밀번호 추가
-            };
-
-            if (!data.password) {
-                alert("비밀번호를 입력해!!!까먹었으면 안되지롱ㅋ");
+        // 1. 들어오자마자 기존 글 내용 불러오기
+        window.onload = async function() {
+            if(!boardId) {
+                alert("잘못된 접근이야! (ID가 없어)");
+                location.href = "index.html";
                 return;
             }
 
             try {
-                const response = await fetch(`/api/board/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                // 기존 글 정보 가져오기
+                const response = await fetch(`/api/board/${boardId}`);
+                if(response.ok) {
+                    const board = await response.json();
+                    document.getElementById("title").value = board.title;
+                    document.getElementById("content").value = board.content;
+                } else {
+                    throw new Error("글 정보를 못 가져왔어 ㅠㅠ");
+                }
+            } catch (err) {
+                alert(err.message);
+                location.href = "index.html";
+            }
+        };
+
+        // 2. 수정 버튼 누르면 서버로 전송 (PUT)
+        async function updatePost() {
+            const title = document.getElementById("title").value;
+            const content = document.getElementById("content").value;
+
+            if(!title || !content) {
+                alert("내용을 비우면 안돼! 😡");
+                return;
+            }
+
+            try {
+                // ★ 핵심: 주소를 컨트롤러(@PutMapping)와 맞춤: /api/board/update/{id}
+                const response = await fetch(`/api/board/update/${boardId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        title: title,
+                        content: content
+                        // password는 안 보냄!
+                    })
                 });
 
+                const msg = await response.text();
+                
                 if (response.ok) {
-                    alert("수정 완료~~~");
-                    location.href = `detail.html?id=${id}`;
+                    alert("수정 완료! ✨"); 
+                    // 수정 성공하면 상세 페이지로 돌아가기
+                    location.href = `detail.html?id=${boardId}`;
                 } else {
-                    alert("수정 실패!!! 비밀번호 까무것엉!?");
+                    // 서버가 에러 메시지("작성자만 수정 가능합니다")를 보내줌
+                    alert(msg); 
                 }
-            } catch (e) {
-                console.error(e);
-                alert("서버 오류 났잖아!!");
+            } catch (err) {
+                console.error(err);
+                alert("서버 연결 오류! 로그인 상태를 확인해봐.");
             }
         }
     </script>

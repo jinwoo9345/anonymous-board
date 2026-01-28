@@ -26,17 +26,15 @@ public class Board {
     @Column(length = 20, nullable = false) // 작성자는 20자 제한
     private String author;
 
-    @Column(length = 20, nullable = false) // 🔐 핵심! 비밀번호 (수정/삭제용)
-    private String password;
+   
 
     private LocalDateTime createdAt; // 작성 시간
 
     // 우리가 쓸 생성자 (제목, 내용, 작성자, 비번만 있으면 됨)
-    public Board(String title, String content, String author, String password) {
+    public Board(String title, String content, String author) {
         this.title = title;
         this.content = content;
         this.author = author;
-        this.password = password;
         this.createdAt = LocalDateTime.now(); // 현재 시간 자동 저장
     }
 

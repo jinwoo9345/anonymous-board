@@ -14,7 +14,8 @@ public class BoardDTO {
     private String title;
     private String content;
     private String author;
-    private String password; // (글 쓸 때만 사용, 조회할 땐 null로 비움)
+ 
+
     private LocalDateTime createdAt;
 
     // Entity -> DTO 변환 (조회용)
@@ -24,7 +25,6 @@ public class BoardDTO {
             board.getTitle(),
             board.getContent(),
             board.getAuthor(),
-            null, // 조회할 때는 비밀번호 안 보여줌! (보안)
             board.getCreatedAt()
         );
     }

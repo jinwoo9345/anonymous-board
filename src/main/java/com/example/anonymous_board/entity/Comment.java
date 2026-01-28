@@ -23,8 +23,7 @@ public class Comment {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    @Column(length = 20, nullable = false)
-    private String password;
+    
 
     private LocalDateTime createdAt;
 
@@ -35,11 +34,14 @@ public class Comment {
     // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
     // 생성자에도 board를 받아야 저장할 수 있겠죠?
-    public Comment(String author, String content, String password, Board board) {
+    public Comment(String author, String content, Board board) {
         this.author = author;
         this.content = content;
-        this.password = password;
         this.board = board; // ★ 게시글 정보 저장
         this.createdAt = LocalDateTime.now();
+    }
+
+    public void update(String content) {
+        this.content = content;
     }
 }

@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# .gitignore 파일 맨 아래에 추가
+src/main/resources/static/images

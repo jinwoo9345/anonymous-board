@@ -8,6 +8,7 @@ import com.example.anonymous_board.dto.CommentResponseDto;
 import com.example.anonymous_board.repository.BoardRepository;
 import com.example.anonymous_board.repository.CommentRepository;
 import com.example.anonymous_board.entity.Comment;
+import com.example.anonymous_board.entity.User;
 import com.example.anonymous_board.entity.Board;
 import lombok.RequiredArgsConstructor;
 
@@ -24,11 +25,12 @@ public class CommentService {
 
 
     //1. 댓글 작성(create)
-    public CommentResponseDto createComment(CommentRequestDto dto){
+    public CommentResponseDto createComment(CommentRequestDto dto, User user){
 
         Board board = boardRepository.findById(dto.getBoardId()).orElseThrow(()-> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
-        Comment comment = new Comment(dto.getAuthor(), dto.getContent(), dto.getPassword(), board);
+
+        Comment comment = dto.toEntity(user.getNickName(), board);
 
         Comment savedComment = commentRepository.save(comment);
 
@@ -49,4 +51,36 @@ public class CommentService {
                 .map(CommentResponseDto::new) // 생성자로 변환
                 .collect(Collectors.toList());
     }
+
+    //3. 댓글 삭제
+    public String deleteComment(Long commentId, User user){
+        
+        Comment comment = commentRepository.findById(commentId)
+            .orElseThrow(()-> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+        if(!comment.getAuthor().equals(user.getNickName())){
+            throw new IllegalArgumentException("작성자만 삭제 가능합니다."); 
+        }
+
+        commentRepository.delete(comment);
+
+        return "삭제가 완료되었습니다!";
+    }
+
+    // 4. 댓글 수정
+    @Transactional
+    public CommentResponseDto updateComment(Long commentId, CommentRequestDto dto ,User user){
+
+        Comment comment = commentRepository.findById(commentId)
+            .orElseThrow(()->new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+        
+        if(!comment.getAuthor().equals(user.getNickName())){
+            throw new IllegalArgumentException("작성자만 삭제 가능합니다");
+        }
+
+        // 저장은 따로 필요없음 자동으로 @Transactional 어노테이션이 저장
+        comment.update(dto.getContent());
+
+        return new CommentResponseDto(comment); // 수정된 내용 반환환
+    }
+
 }
