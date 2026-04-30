@@ -108,7 +108,7 @@
                 document.getElementById('content').value = board.content;
             } catch (e) {
                 console.error(e);
-                alert("글 정보를 불러오는데 실패했지롱~~메롱!");
+                alert("글 정보를 불러오는데 실패했어");
             }
         };
 
@@ -121,7 +121,7 @@
             };
 
             if (!data.password) {
-                alert("비밀번호를 입력해!!!까먹었으면 안되지롱ㅋ");
+                alert("비밀번호를 입력해!!!");
                 return;
             }
 
@@ -136,11 +136,11 @@
                     alert("수정 완료~~~");
                     location.href = `detail.html?id=${id}`;
                 } else {
-                    alert("수정 실패!!! 비밀번호 까무것엉!?");
+                    alert("수정 실패!!! ");
                 }
             } catch (e) {
                 console.error(e);
-                alert("서버 오류 났잖아!!");
+                alert("서버 오류!!");
             }
         }
     </script>
